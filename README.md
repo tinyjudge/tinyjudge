@@ -1,2 +1,2 @@
-# tinyjudge
+# TinyJudge
 A tiny judge
