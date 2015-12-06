@@ -61,6 +61,11 @@ int file_c::comp(const string &file2,bool bin)
 		{
 			if(f1.bad()||f1.fail()||f2.bad()||f2.fail())return -1;
 			if(f1.eof()||f2.eof())return 1;
+			int i;
+			for(i=0;tmp1[i]&&tmp1[i]!=10&&tmp1[i]!=13;i++);
+			tmp1[i]=0;
+			for(i=0;tmp2[i]&&tmp2[i]!=10&&tmp2[i]!=13;i++);
+			tmp2[i]=0;
 			str1=tmp1;str2=tmp2;
 			if(str1!=str2)return 1;
 			f1.getline(tmp1,65535);
@@ -70,22 +75,21 @@ int file_c::comp(const string &file2,bool bin)
 	}
 } 
 
-bool file_c::copy(const string &dest)
-{
-	ifstream f1(filestr.c_str(),ios::binary);
-	if(f1.bad()||f1.fail())return false;
-	ofstream f2(dest.c_str(),ios::binary);
-	if(f2.bad()||f2.fail())return false;
-	
-	char cur;
-	f1.read(&cur,1);
-	while(!f1.eof())
-	{
-		if(f1.bad()||f1.fail())return false;
-		f2.write(&cur,1);
-		if(f2.bad()||f2.fail())return false;
-		f1.read(&cur,1);
+bool file_c::copy(const string &dest){
+	FILE *f1=fopen(filestr.c_str(),"r");
+	if(!f1)return false;
+	FILE *f2=fopen(dest.c_str(),"w");
+	if(!f2){
+		fclose(f1);
+		return false;
 	}
+
+	char cur;
+	while((cur=fgetc(f1))!=EOF){
+		fputc(cur,f2);
+	}
+	fclose(f1);
+	fclose(f2);
 	return true;
 }
 

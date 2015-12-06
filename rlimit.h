@@ -1,37 +1,42 @@
 #ifndef RLIMIT_H
 #define RLIMIT_H
 
+#include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <iostream>
 #include <string>
 using namespace std;
 
 #ifdef __WIN32
-#include "Windows.h"
+#include <Windows.h>
 #else
-#include "sys/resource.h"
-#include "sys/signal.h"
-#include "sys/time.h"
-#include "sys/types.h"
-#include "sys/wait.h"
+#include <sys/resource.h>
+#include <sys/signal.h>
+#include <sys/time.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 #endif
-#include "unistd.h" 
+#include <errno.h>
+#include <unistd.h>
 
 class rlimit_c{
 private:
 	string exec;
 	size_t memory;
-	long long time;
+	long long cputime;
 	int proc;
 	int prior;
+	long long time;
 public:
 	rlimit_c();
 	rlimit_c& setexec(string exec);
 	enum rlimit_type{
 		RLIMIT_MEMORY,
-		RLIMIT_TIME,
+		RLIMIT_CPUTIME,
 		RLIMIT_PROC,
 		RLIMIT_PRIOR,
+		RLIMIT_TIME,
 	};
 	bool set(rlimit_type type,long long val);
 	int run();

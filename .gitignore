@@ -3,4 +3,6 @@
 
 tjudge*
 
+*.anjuta
+
 !.gitignore

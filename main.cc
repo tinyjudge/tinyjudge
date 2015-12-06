@@ -9,6 +9,7 @@ using namespace std;
 
 int main(int argc,char *argv[])
 {
+	setbuf(stdout,NULL);
 	map<string,string>argu;
 
 	for(int i=1;i<argc;i++)

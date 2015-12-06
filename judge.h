@@ -1,6 +1,7 @@
 #ifndef JUDGE_H
 #define JUDGE_H
 
+#include <algorithm>
 #include <cstdlib>
 #include <cstring>
 #include <iostream>

@@ -3,7 +3,7 @@
 rlimit_c::rlimit_c()
 {
 	this->exec="";
-	this->memory=this->time=this->proc=0;
+	this->memory=this->cputime=this->proc=0;
 }
 
 rlimit_c& rlimit_c::setexec(string exec)
@@ -19,17 +19,20 @@ bool rlimit_c::set(rlimit_type type,long long val)
 		case RLIMIT_MEMORY:
 			this->memory=val;
 			break;
-		case RLIMIT_TIME:
+		case RLIMIT_CPUTIME:
 #ifdef __WIN32
 			val*=10000000;
 #endif
-			this->time=val;
+			this->cputime=val;
 			break;
 		case RLIMIT_PROC:
 			this->proc=val;
 			break;
 		case RLIMIT_PRIOR:
 			this->prior=val;
+			break;
+		case RLIMIT_TIME:
+			this->time=val;
 			break;
 		default:
 			return false;
@@ -44,6 +47,8 @@ int rlimit_c::run()
 	if(childpid==-1)return -1;
 	if(childpid>0)
 	{
+		int status,ret=0;
+
 		waitpid(childpid,NULL,WUNTRACED);
 		if(this->prior)setpriority(PRIO_PROCESS,childpid,this->prior);	//requires superuser permission, so do not check this
 		struct rlimit rlimit;
@@ -56,27 +61,35 @@ int rlimit_c::run()
 		rlimit.rlim_cur=this->memory;
 		rlimit.rlim_max=this->memory;
 		if(prlimit(childpid,RLIMIT_AS,&rlimit,NULL)==-1)goto killandret;
-		rlimit.rlim_cur=this->time;
-		rlimit.rlim_max=this->time+1;
+		rlimit.rlim_cur=this->cputime;
+		rlimit.rlim_max=this->cputime+1;
 		/*
 		 * plus 1 to the hard limit so we can receive a SIGXCPU instead of
 		 * a SIGKILL when time limit is exceeded
 		 */
 		if(prlimit(childpid,RLIMIT_CPU,&rlimit,NULL)==-1)goto killandret;
-		
 		if(kill(childpid,SIGCONT))goto killandret;
-		int status;
-		if(waitpid(childpid,&status,0)==-1)goto killandret;
+
+		for(int i=0;i<this->time*2;i++){
+			ret=waitpid(childpid,&status,WNOHANG);
+			if(ret!=0)break;
+			usleep(500000);
+		}
+		if(ret==0||ret==-1)goto killandret;
+
 		return status;
 killandret:
 		if(!kill(childpid,SIGKILL))
-			waitpid(childpid,NULL,0);	//prevent zombie processes
+			waitpid(childpid,NULL,0);	//avoid zombie processes
 		return -1;
 	}
 	else if(childpid==0) 
 	{
 		childpid=getpid();
 		if(kill(childpid,SIGSTOP))exit(EXIT_FAILURE);
+		//freopen("/dev/null","r",stdin);
+		//freopen("/dev/null","w",stdout);
+		//freopen("/dev/null","w",stderr);
 		if(this->exec[1]!='/')execl(("./"+this->exec).c_str(),
 			this->exec.substr(this->exec.find_last_of('/')+1).c_str(),
 			(char*)NULL);
@@ -92,12 +105,12 @@ killandret:
 	JOBOBJECT_BASIC_LIMIT_INFORMATION limitinfo;
 	memset(&limitinfo,0,sizeof(limitinfo));
 	
-	limitinfo.PerProcessUserTimeLimit.QuadPart=this->time;
+	limitinfo.PerProcessUserTimeLimit.QuadPart=this->cputime;
 	limitinfo.MinimumWorkingSetSize=(this->memory/2>0?this->memory/2:1);
 	limitinfo.MaximumWorkingSetSize=this->memory;
 	limitinfo.ActiveProcessLimit=this->proc;
 	limitinfo.PriorityClass=this->prior;
-	if(this->time)limitinfo.LimitFlags|=JOB_OBJECT_LIMIT_PROCESS_TIME;
+	if(this->cputime)limitinfo.LimitFlags|=JOB_OBJECT_LIMIT_PROCESS_TIME;
 	if(this->memory)limitinfo.LimitFlags|=JOB_OBJECT_LIMIT_WORKINGSET;
 	if(this->proc)limitinfo.LimitFlags|=JOB_OBJECT_LIMIT_ACTIVE_PROCESS;
 	if(this->prior)limitinfo.LimitFlags|=JOB_OBJECT_LIMIT_PRIORITY_CLASS;
@@ -156,7 +169,7 @@ killandret:
 	
 	CloseHandle(pinfo.hThread);
 	
-	if(WaitForSingleObject(pinfo.hProcess,INFINITE)==WAIT_FAILED)
+	if(WaitForSingleObject(pinfo.hProcess,this->time*1000)==WAIT_FAILED)
 	{
 		CloseHandle(pinfo.hProcess);
 		CloseHandle(job);
@@ -171,6 +184,7 @@ killandret:
 		return -1;
 	}
 	
+	TerminateProcess(pinfo.hProcess,1);
 	
 	CloseHandle(pinfo.hProcess);
 	CloseHandle(job);

@@ -32,9 +32,11 @@ bool judge_c::compile(const string &compiler,const string &src,const string &exe
 
 bool judge_c::runjudge(string &glblog,bool nolog)
 {
+	vector<pair<int,string> >finalres;
+
 	file_c file;
-	
 	file.setfile(this->probdir);
+
 	static vector<string>probs;
 	probs.clear();
 	if(!file.travedir(probs,file.FILE_TYPE_DIR))return false;
@@ -64,7 +66,8 @@ bool judge_c::runjudge(string &glblog,bool nolog)
 		config[*curprob]["bincomp"]="false"; 
 		config[*curprob]["score"]="10";
 		config[*curprob]["memory"]="134217728";
-		config[*curprob]["time"]="1";
+		config[*curprob]["cputime"]="1";
+		config[*curprob]["time"]="5";
 		config[*curprob]["proc"]="0";
 		config[*curprob]["prior"]="0";
 		string curcfgfull=this->probdir+'/'+*curprob+'/'+"config";
@@ -120,6 +123,7 @@ bool judge_c::runjudge(string &glblog,bool nolog)
 				rlimit_c rlimit;
 				rlimit.setexec(exec);
 				rlimit.set(rlimit.RLIMIT_MEMORY,atoi(config[*curprob]["memory"].c_str()));
+				rlimit.set(rlimit.RLIMIT_CPUTIME,atoi(config[*curprob]["cputime"].c_str()));
 				rlimit.set(rlimit.RLIMIT_TIME,atoi(config[*curprob]["time"].c_str()));
 				rlimit.set(rlimit.RLIMIT_PROC,atoi(config[*curprob]["proc"].c_str()));
 				rlimit.set(rlimit.RLIMIT_PRIOR,atoi(config[*curprob]["prior"].c_str()));
@@ -152,7 +156,7 @@ bool judge_c::runjudge(string &glblog,bool nolog)
 #ifdef __WIN32
 					if(runres&&runres!=1816)
 					{
-						loclog+="2 failed to execute or run-time error, return value: ";
+						loclog+="2 failed to execute, run-time error or the execution took too long time, return value: ";
 						loclog+=itoa(runres,buf,10);
 						continue;
 					}
@@ -162,6 +166,10 @@ bool judge_c::runjudge(string &glblog,bool nolog)
 						continue;
 					}
 #else
+					if(runres==-1){
+						loclog+="2 failed to execute or the execution took too long time";
+						continue;
+					}
 					if(WIFEXITED(runres)&&WEXITSTATUS(runres))
 					{
 						loclog+="2 return value is not 0, return value: ";
@@ -249,10 +257,21 @@ bool judge_c::runjudge(string &glblog,bool nolog)
 		glblog+=string("final: ")+itoa(partscore,buf,10)+"\n\n";
 		summary+="part: "+*curpart+"\nfinal: "+buf+"\n";
 		cout<<string("final: ")+buf+"\n\n";
+		finalres.push_back(make_pair(-partscore,(string)*curpart));
 	}
 	free(orgwd);
 	
 	glblog+=summary;
 	cout<<summary;
+
+	sort(finalres.begin(),finalres.end());
+	cout<<"\nsorted:\n";
+	glblog+="\nsorted:\n";
+	for(int i=0;i<finalres.size();i++){
+		char tmp[1000];
+		sprintf(tmp,"%s %d\n",finalres[i].second.c_str(),-finalres[i].first);
+		cout<<tmp;
+		glblog+=tmp;
+	}
 	return true;
 }
