@@ -166,47 +166,60 @@ bool judge_c::runjudge(string &glblog, bool nolog)
 					unlink(
 						(curpartdir + *curprob + config[*curprob]["insuf"])
 							.c_str());
-
-					file.setfile(curprobdir + itoa(i, buf, 10) +
-						config[*curprob]["anssuf"]);
-					int comp_res = file.comp(curpartdir + *curprob + config[*curprob]["outsuf"],
-					                         config[*curprob]["bincomp"] == "true" ? true : false);
-
-					unlink(
-						(curpartdir + *curprob + config[*curprob]["outsuf"])
-							.c_str());
 #ifdef __WIN32
 					if (runres && runres != 1816) {
 						loclog +=
 							"2 failed to execute, run-time error or the execution took too "
 							"long time, return value: ";
 						loclog += itoa(runres, buf, 10);
+						unlink(
+							(curpartdir + *curprob + config[*curprob]["outsuf"])
+								.c_str());
 						continue;
 					} else if (runres == 1816) {
 						loclog += "3 time limit exceeded, return value: 1816";
+						unlink(
+							(curpartdir + *curprob + config[*curprob]["outsuf"])
+								.c_str());
 						continue;
 					}
 #else
 					if (runres == -1) {
 						loclog += "2 failed to execute or the execution took too long time";
+						unlink(
+							(curpartdir + *curprob + config[*curprob]["outsuf"])
+								.c_str());
 						continue;
 					}
 					if (WIFEXITED(runres) && WEXITSTATUS(runres)) {
 						loclog += "2 return value is not 0, return value: ";
 						loclog += itoa(WEXITSTATUS(runres), buf, 10);
+						unlink(
+							(curpartdir + *curprob + config[*curprob]["outsuf"])
+								.c_str());
 						continue;
 					}
 					if (WIFSIGNALED(runres) && WTERMSIG(runres)) {
 						if (WTERMSIG(runres) == SIGXCPU) {
 							loclog += "3 time limit exceeded, signal: ";
 							loclog += itoa(SIGXCPU, buf, 10);
+							unlink(
+								(curpartdir + *curprob + config[*curprob]["outsuf"])
+									.c_str());
 							continue;
 						}
 						loclog += "2 signal: ";
 						loclog += itoa(WTERMSIG(runres), buf, 10);
+						unlink(
+							(curpartdir + *curprob + config[*curprob]["outsuf"])
+								.c_str());
 						continue;
 					}
 #endif
+					file.setfile(curprobdir + itoa(i, buf, 10) +
+						config[*curprob]["anssuf"]);
+					int comp_res = file.comp(curpartdir + *curprob + config[*curprob]["outsuf"],
+					                         config[*curprob]["bincomp"] == "true" ? true : false);
 					switch (comp_res) {
 						case -1:
 							loclog += "4 failed to compare output file with answer file";
@@ -238,6 +251,9 @@ bool judge_c::runjudge(string &glblog, bool nolog)
 							log_out.close();
 							break;
 					}
+					unlink(
+						(curpartdir + *curprob + config[*curprob]["outsuf"])
+							.c_str());
 				}
 			}
 
