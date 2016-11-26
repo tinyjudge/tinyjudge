@@ -5,6 +5,8 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+#include <cstdio>
+#include <cstring>
 #include <iostream> 
 #include <fstream>
 #include <map>

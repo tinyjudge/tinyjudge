@@ -45,30 +45,35 @@ int file_c::comp(const string &file2, bool bin)
 		}
 		return 0;
 	} else {
-		ifstream f1(filestr.c_str());
-		ifstream f2(file2.c_str());
-		if(f1.bad() || f1.fail() || f2.bad() || f2.fail()) return -1;
-
 		char tmp1[65536], tmp2[65536];
-		string str1, str2;
-		f1.getline(tmp1, 65535);
-		f2.getline(tmp2, 65535);
-		while(!f1.eof() || !f2.eof()) {
-			if(f1.bad() || f1.fail() || f2.bad() || f2.fail()) return -1;
-			if(f1.eof() || f2.eof())return 1;
-			int i;
-			for(i = 0; tmp1[i] != '\0' && tmp1[i] != '\n' && tmp1[i] != '\r'; i++);
-			for(; i > 0 && tmp1[i - 1] == ' '; --i);
+		tmp1[0] = tmp2[0] = 0;
+
+		FILE *f1 = fopen(filestr.c_str(), "r");
+		if(f1 == NULL) return -1;
+		FILE *f2 = fopen(file2.c_str(), "r");
+		if(f2 == NULL) return -1;
+
+		while(true) {
+			char *p1 = fgets(tmp1, 65535, f1);
+			char *p2 = fgets(tmp2, 65535, f2);
+			if(p1 == NULL && p2 == NULL) {
+				return 0;
+			}
+			if(p1 == NULL || p2 == NULL) {
+				return 1;
+			}
+			int i = strlen(tmp1);
+			while(i > 0 && (tmp1[i - 1] == '\r' || tmp1[i - 1] == '\n' || tmp1[i - 1] == ' ')) {
+				--i;
+			}
 			tmp1[i] = 0;
-			for(i = 0; tmp2[i] != '\0' && tmp2[i] != '\n' && tmp2[i] != '\r'; i++);
-			for(; i > 0 && tmp2[i - 1] == ' '; --i);
+			i = strlen(tmp2);
+			while(i > 0 && (tmp2[i - 1] == '\r' || tmp2[i - 1] == '\n' || tmp2[i - 1] == ' ')) {
+				--i;
+			}
 			tmp2[i] = 0;
-			str1 = tmp1; str2 = tmp2;
-			if(str1 != str2) return 1;
-			f1.getline(tmp1, 65535);
-			f2.getline(tmp2, 65535);
+			if(strcmp(tmp1, tmp2) != 0) return 1;
 		}
-		return 0;
 	}
 } 
 

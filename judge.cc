@@ -162,6 +162,19 @@ bool judge_c::runjudge(string &glblog, bool nolog)
 					else
 						runres = rlimit.run();
 					if (chdir(orgwd) == -1) runres = -1;
+					
+					unlink(
+						(curpartdir + *curprob + config[*curprob]["insuf"])
+							.c_str());
+
+					file.setfile(curprobdir + itoa(i, buf, 10) +
+						config[*curprob]["anssuf"]);
+					int comp_res = file.comp(curpartdir + *curprob + config[*curprob]["outsuf"],
+					                         config[*curprob]["bincomp"] == "true" ? true : false);
+
+					unlink(
+						(curpartdir + *curprob + config[*curprob]["outsuf"])
+							.c_str());
 #ifdef __WIN32
 					if (runres && runres != 1816) {
 						loclog +=
@@ -194,11 +207,7 @@ bool judge_c::runjudge(string &glblog, bool nolog)
 						continue;
 					}
 #endif
-					file.setfile(curprobdir + itoa(i, buf, 10) +
-					             config[*curprob]["anssuf"]);
-					switch (
-							file.comp(curpartdir + *curprob + config[*curprob]["outsuf"],
-							          config[*curprob]["bincomp"] == "true" ? true : false)) {
+					switch (comp_res) {
 						case -1:
 							loclog += "4 failed to compare output file with answer file";
 							break;
@@ -231,6 +240,10 @@ bool judge_c::runjudge(string &glblog, bool nolog)
 					}
 				}
 			}
+
+			unlink(
+				(curpartdir + *curprob + config[*curprob]["execsuf"])
+					.c_str());
 
 			glblog += loclog;
 			cout << loclog;
