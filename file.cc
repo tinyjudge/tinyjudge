@@ -57,9 +57,11 @@ int file_c::comp(const string &file2, bool bin)
 			if(f1.bad() || f1.fail() || f2.bad() || f2.fail()) return -1;
 			if(f1.eof() || f2.eof())return 1;
 			int i;
-			for(i=0; tmp1[i] && tmp1[i] != '\n' && tmp1[i] != '\r'; i++);
+			for(i = 0; tmp1[i] != '\0' && tmp1[i] != '\n' && tmp1[i] != '\r'; i++);
+			for(; i > 0 && tmp1[i - 1] == ' '; --i);
 			tmp1[i] = 0;
-			for(i=0; tmp2[i] && tmp2[i] != '\n' && tmp2[i] != '\r'; i++);
+			for(i = 0; tmp2[i] != '\0' && tmp2[i] != '\n' && tmp2[i] != '\r'; i++);
+			for(; i > 0 && tmp2[i - 1] == ' '; --i);
 			tmp2[i] = 0;
 			str1 = tmp1; str2 = tmp2;
 			if(str1 != str2) return 1;
