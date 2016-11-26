@@ -1,13 +1,6 @@
 #ifndef RLIMIT_H
 #define RLIMIT_H
 
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
-#include <iostream>
-#include <string>
-using namespace std;
-
 #ifdef __WIN32
 #include <Windows.h>
 #else
@@ -19,6 +12,13 @@ using namespace std;
 #endif
 #include <errno.h>
 #include <unistd.h>
+
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <iostream>
+#include <string>
+using namespace std;
 
 class rlimit_c{
 private:
@@ -38,7 +38,7 @@ public:
 		RLIMIT_PRIOR,
 		RLIMIT_TIME,
 	};
-	bool set(rlimit_type type,long long val);
+	bool set(rlimit_type type, long long val);
 	int run();
 };
 
