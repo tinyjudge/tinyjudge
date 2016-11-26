@@ -8,18 +8,18 @@ def name(x):
 		if x[i] == '.': return x[:i]
 	return ''
 
-def prog_number(x):
+def prob_number(x):
 	for i in xrange(len(x) - 1, -1, -1):
 		if not x[i].isdigit(): return (x[:i + 1], int(x[i + 1:]))
 	return ('', int(x))
 
 
-for d in glob.glob('prog/*'):
+for d in glob.glob('prob/*'):
 	d = d + '/'
 	try:
 		for i in glob.glob(d + '*.in'):
 			nm = name(i)
-			pn = prog_number(nm)
+			pn = prob_number(nm)
 			if pn[0].endswith('/'): continue	# already processed
 			try:
 				os.rename(i, d + str(pn[1] - 1) + '.in')
