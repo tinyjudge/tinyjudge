@@ -51,15 +51,22 @@ int file_c::comp(const string &file2, bool bin)
 		FILE *f1 = fopen(filestr.c_str(), "r");
 		if(f1 == NULL) return -1;
 		FILE *f2 = fopen(file2.c_str(), "r");
-		if(f2 == NULL) return -1;
+		if(f2 == NULL) {
+			fclose(f1);
+			return -1;
+		}
 
 		while(true) {
 			char *p1 = fgets(tmp1, 65535, f1);
 			char *p2 = fgets(tmp2, 65535, f2);
 			if(p1 == NULL && p2 == NULL) {
+				fclose(f1);
+				fclose(f2);
 				return 0;
 			}
 			if(p1 == NULL || p2 == NULL) {
+				fclose(f1);
+				fclose(f2);
 				return 1;
 			}
 			int i = strlen(tmp1);
@@ -72,7 +79,11 @@ int file_c::comp(const string &file2, bool bin)
 				--i;
 			}
 			tmp2[i] = 0;
-			if(strcmp(tmp1, tmp2) != 0) return 1;
+			if(strcmp(tmp1, tmp2) != 0) {
+				fclose(f1);
+				fclose(f2);
+				return 1;
+			}
 		}
 	}
 } 
