@@ -30,7 +30,7 @@ bool judge_c::compile(const string &compiler, const string &src,
 	srcenv[("TJ_SRC=" + src).size()] = '\0';
 	if (putenv(execenv)) return false;
 	if (putenv(srcenv)) return false;
-	system(("echo invoking " + compiler + " > \"" + log + '"').c_str());
+	system(("echo invoking \"" + compiler + "\" > \"" + log + '"').c_str());
 	return (!system((compiler + " 1>> \"" + log + "\" 2>&1").c_str()));
 }
 

@@ -90,9 +90,9 @@ int file_c::comp(const string &file2, bool bin)
 
 bool file_c::copy(const string &dest){
 	FILE *f1 = fopen(filestr.c_str(), "r");
-	if(!f1) return false;
+	if(f1 == NULL) return false;
 	FILE *f2 = fopen(dest.c_str(), "w");
-	if(!f2) {
+	if(f2 == NULL) {
 		fclose(f1);
 		return false;
 	}
@@ -108,16 +108,19 @@ bool file_c::copy(const string &dest){
 
 bool file_c::readall(string &str)
 {
-	ifstream file(this->filestr.c_str());
-	if(file.bad() || file.fail()) return false;
-	char tmp[65536];
-	str = "";
-	file.getline(tmp, 65535);
-	while(!file.eof()) {
-		if(file.bad() || file.fail()) return false;
-		str += string(tmp) + '\n';
-		file.getline(tmp, 65535);
+	FILE *file = fopen(filestr.c_str(), "r");
+	if(file == NULL) {
+		return false;
 	}
+
+	str = "";
+
+	char cur;
+	while((cur = fgetc(file)) != EOF) {
+		str += cur;
+	}
+
+	fclose(file);
 	return true;
 }
 
