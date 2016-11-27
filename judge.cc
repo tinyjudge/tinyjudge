@@ -92,7 +92,10 @@ bool judge_c::runjudge(string &glblog, bool nolog)
 			int probscore = 0, score = atoi(config[*curprob]["score"].c_str());
 
 			string loclog;
-			loclog = "part: " + *curpart + "\nprob: " + *curprob + '\n';
+			loclog = "part: " + *curpart + " ("
+			         + to_string(distance(parts.begin(), curpart) + 1)
+			         + "/" + to_string(parts.size()) + ")\nprob: "
+			         + *curprob + '\n';
 
 			string curpartdir = this->partdir + '/' + *curpart + '/';
 			string curprobdir = this->probdir + '/' + *curprob + '/';

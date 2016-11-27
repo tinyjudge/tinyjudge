@@ -1,4 +1,4 @@
-CXX=g++ -O2
+CXX=g++ -O2 -std=c++11
 
 HEADER=$(shell ls *.h)
 SRC=$(shell ls *.cc)
