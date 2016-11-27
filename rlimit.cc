@@ -68,10 +68,10 @@ int rlimit_c::run()
 		if(prlimit(childpid, RLIMIT_CPU, &rlimit, NULL) == -1) goto killandret;
 		if(kill(childpid, SIGCONT)) goto killandret;
 
-		for(int i = 0; i < this->time * 2; i++) {
+		for(int i = 0; i < this->time * (1000000 / 5000); i++) {
 			ret = waitpid(childpid, &status, WNOHANG);
 			if(ret != 0) break;
-			usleep(500000);
+			usleep(5000);
 		}
 		if(ret == 0 || ret == -1) goto killandret;
 
