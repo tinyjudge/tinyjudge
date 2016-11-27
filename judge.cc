@@ -6,7 +6,7 @@ judge_c::judge_c()
 }
 
 judge_c::judge_c(const string &compiler, const string &partdir,
-                 const string &probdir)
+                 const string &probdir, const string &logfile /* = "" */ )
 {
 #ifdef __WIN32
 	this->compiler =
@@ -17,6 +17,7 @@ judge_c::judge_c(const string &compiler, const string &partdir,
 #endif
 	this->partdir = (partdir == "" ? string("part") : partdir);
 	this->probdir = (probdir == "" ? string("prob") : probdir);
+	this->logfile = logfile;
 }
 
 bool judge_c::compile(const string &compiler, const string &src,
@@ -34,8 +35,15 @@ bool judge_c::compile(const string &compiler, const string &src,
 	return (!system((compiler + " 1>> \"" + log + "\" 2>&1").c_str()));
 }
 
-bool judge_c::runjudge(string &glblog, bool nolog)
+bool judge_c::runjudge(bool nolog)
 {
+	string glblog = "";
+	if(logfile != "") {
+		FILE *flog = fopen(logfile.c_str(), "w");
+		if(flog == NULL) return false;
+		fclose(flog);
+	}
+
 	vector<pair<int, string> > finalres;
 
 	file_c file;
@@ -297,6 +305,17 @@ bool judge_c::runjudge(string &glblog, bool nolog)
 		summary += "part: " + *curpart + "\nfinal: " + buf + "\n";
 		cout << string("final: ") + buf + "\n\n";
 		finalres.push_back(make_pair(partscore, (string)*curpart));
+
+		if(logfile != "") {
+			FILE *flog = fopen(logfile.c_str(), "a");
+			if(flog != NULL) {
+				fputs(glblog.c_str(), flog);
+				fclose(flog);
+				glblog = "";
+			} else {
+				perror("writing log to file");
+			}
+		}
 	}
 	free(orgwd);
 
@@ -312,5 +331,16 @@ bool judge_c::runjudge(string &glblog, bool nolog)
 		cout << tmp;
 		glblog += tmp;
 	}
+
+	if(logfile != "") {
+		FILE *flog = fopen(logfile.c_str(), "a");
+		if(flog != NULL) {
+			fputs(glblog.c_str(), flog);
+			fclose(flog);
+		} else {
+			perror("writing log to file");
+		}
+	}
+
 	return true;
 }

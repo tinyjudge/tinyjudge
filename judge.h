@@ -20,12 +20,14 @@ class judge_c
 {
 public:
 	string compiler, partdir, probdir;
+	string logfile;
 	judge_c();
-	judge_c(const string &compiler, const string &partdir, const string &probdir);
+	judge_c(const string &compiler, const string &partdir,
+	        const string &probdir, const string &logfile = "");
 
 	bool compile(const string &compiler, const string &src, const string &exec,
 	             const string &log);
-	bool runjudge(string &glblog, bool nolog);
+	bool runjudge(bool nolog);
 };
 
 #endif

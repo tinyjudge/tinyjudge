@@ -53,7 +53,7 @@ int main(int argc, char *argv[])
 				<< "  -p <dir>        specify participants\' directory" << endl
 				<< "  -r              run judge" << endl
 				<< "  -o <file>       output log to file" << endl
-				<< "  -l              do not output log" << endl
+				<< "  -l              do not show specific log about compiling and judging" << endl
 				<< "  --help          show this message" << endl;
 			return EXIT_SUCCESS;
 		} else {
@@ -62,17 +62,10 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	judge_c judge = judge_c(argu["-c"], argu["-p"], argu["-b"]);
+	judge_c judge = judge_c(argu["-c"], argu["-p"], argu["-b"], argu["-o"]);
 	if(argu["-r"] == "true") {
-		string log;
-		if(!judge.runjudge(log,argu["-l"] == "true" ? true : false))
+		if(!judge.runjudge(argu["-l"] == "true" ? true : false))
 			cout << endl << "Failed running judge." << endl;
-		else {
-			if(argu["-o"]!="") {
-				ofstream fout(argu["-o"].c_str());
-				fout << log;
-			}
-		}
 	}
 
 	return EXIT_SUCCESS;
